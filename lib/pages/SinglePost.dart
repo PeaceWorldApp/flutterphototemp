@@ -181,6 +181,21 @@ class SinglePost extends StatelessWidget {
   ];
 
   Widget makeRelatedPhotos(Post post) {
+    // return GridView.custom(
+    //   gridDelegate: SliverQuiltedGridDelegate(
+    //     crossAxisCount:2,
+    //     mainAxisSpacing: 4,
+    //     crossAxisSpacing: 1,
+    //     repeatPattern: QuiltedGridRepeatPattern.inverted,
+    //     pattern: [
+    //       QuiltedGridTile(2, 2),
+    //     ],
+    //   ),
+    //   childrenDelegate: SliverChildBuilderDelegate(
+    //     (context, index) => Tile(index: index),
+    //   ),
+    //   // shrinkWrap: true,
+    // );
     return StaggeredGrid.count(
       crossAxisCount: 4,
       mainAxisSpacing: 4,
@@ -211,6 +226,31 @@ class SinglePost extends StatelessWidget {
           crossAxisCellCount: 4,
           mainAxisCellCount: 2,
           child: _listTile.elementAt(4),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 2,
+          mainAxisCellCount: 2,
+          child: _listTile.elementAt(5),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 2,
+          mainAxisCellCount: 1,
+          child: _listTile.elementAt(6),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 1,
+          mainAxisCellCount: 1,
+          child: _listTile.elementAt(7),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 1,
+          mainAxisCellCount: 1,
+          child: _listTile.elementAt(8),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 4,
+          mainAxisCellCount: 2,
+          child: _listTile.elementAt(9),
         ),
       ],
     );
@@ -247,6 +287,52 @@ class BackGroundTile extends StatelessWidget {
     return Card(
       color: backgroundColor,
       child: Icon(icondata, color: Colors.white),
+    );
+  }
+}
+
+class Tile extends StatelessWidget {
+  const Tile({
+    Key key,
+    this.index,
+    this.extent,
+    this.backgroundColor,
+    this.bottomSpace,
+  }) : super(key: key);
+
+  final int index;
+  final double extent;
+  final double bottomSpace;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final child = Container(
+      color: backgroundColor ?? Colors.blue,
+      height: extent,
+      child: Center(
+        child: CircleAvatar(
+          minRadius: 20,
+          maxRadius: 20,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          child: Text('$index', style: const TextStyle(fontSize: 20)),
+        ),
+      ),
+    );
+
+    if (bottomSpace == null) {
+      return child;
+    }
+
+    return Column(
+      children: [
+        Expanded(child: child),
+        Container(
+          height: bottomSpace,
+          color: Colors.green,
+        )
+      ],
     );
   }
 }
