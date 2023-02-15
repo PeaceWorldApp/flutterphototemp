@@ -9,7 +9,7 @@ class SinglePost extends StatelessWidget {
   final Post post;
   final String image;
 
-  const SinglePost({Key key, this.post, this.image}) : super(key: key);
+  SinglePost({Key key, this.post, this.image}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -123,8 +123,7 @@ class SinglePost extends StatelessWidget {
                       )
                     ],
                   ),
-
-                  // makeRelatedPhotos(post)
+                  makeRelatedPhotos(post)
                 ],
               ),
             )
@@ -134,33 +133,88 @@ class SinglePost extends StatelessWidget {
     );
   }
 
+  //List of Cards with size
+// List<StaggeredGridTile>  _cardTile = <StaggeredGridTile> [
+//   StaggeredGridTile.count(
+//       crossAxisCellCount: 2,
+//       mainAxisCellCount: 2,
+//       child: Tile(index: 0),
+//     ),
+//     StaggeredGridTile.count(
+//       crossAxisCellCount: 2,
+//       mainAxisCellCount: 1,
+//       child: Tile(index: 1),
+//     ),
+//     StaggeredGridTile.count(
+//       crossAxisCellCount: 1,
+//       mainAxisCellCount: 1,
+//       child: Tile(index: 2),
+//     ),
+//     StaggeredGridTile.count(
+//       crossAxisCellCount: 1,
+//       mainAxisCellCount: 1,
+//       child: Tile(index: 3),
+//     ),
+//     StaggeredGridTile.count(
+//       crossAxisCellCount: 4,
+//       mainAxisCellCount: 2,
+//       child: Tile(index: 4),
+//     )
+// ];
+
+//List of Cards with color and icon
+  List<Widget> _listTile = <Widget>[
+    BackGroundTile(backgroundColor: Colors.red, icondata: Icons.home),
+    BackGroundTile(backgroundColor: Colors.orange, icondata: Icons.ac_unit),
+    BackGroundTile(backgroundColor: Colors.pink, icondata: Icons.landscape),
+    BackGroundTile(backgroundColor: Colors.green, icondata: Icons.portrait),
+    BackGroundTile(
+        backgroundColor: Colors.deepPurpleAccent, icondata: Icons.music_note),
+    BackGroundTile(backgroundColor: Colors.blue, icondata: Icons.access_alarms),
+    BackGroundTile(
+        backgroundColor: Colors.indigo, icondata: Icons.satellite_outlined),
+    BackGroundTile(backgroundColor: Colors.cyan, icondata: Icons.search_sharp),
+    BackGroundTile(
+        backgroundColor: Colors.yellowAccent, icondata: Icons.adjust_rounded),
+    BackGroundTile(
+        backgroundColor: Colors.deepOrange, icondata: Icons.attach_money),
+  ];
+
   Widget makeRelatedPhotos(Post post) {
-    //   return GridView.custom(
-    //     gridDelegate: SliverWovenGridDelegate.count(
-    //       crossAxisCount: 2,
-    //       mainAxisSpacing: 8,
-    //       crossAxisSpacing: 8,
-    //       pattern: [
-    //         WovenGridTile(1),
-    //         WovenGridTile(
-    //           5 / 7,
-    //           crossAxisRatio: 0.9,
-    //           alignment: AlignmentDirectional.centerEnd,
-    //         ),
-    //       ],
-    //     ),
-    //     childrenDelegate: SliverChildBuilderDelegate(
-    //       (context, index) => Container(
-    //         decoration: BoxDecoration(
-    //             borderRadius: BorderRadius.circular(2),
-    //             image: DecorationImage(
-    //                 fit: BoxFit.cover,
-    //                 image: AssetImage(post.relatedPhotos[index])),
-    //             color: Colors.green),
-    //       ),
-    //     ),
-    //   );
-    // }
+    return StaggeredGrid.count(
+      crossAxisCount: 4,
+      mainAxisSpacing: 4,
+      crossAxisSpacing: 4,
+      children: [
+        StaggeredGridTile.count(
+          crossAxisCellCount: 2,
+          mainAxisCellCount: 2,
+          child:
+              BackGroundTile(backgroundColor: Colors.red, icondata: Icons.home),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 2,
+          mainAxisCellCount: 1,
+          child: _listTile.elementAt(1),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 1,
+          mainAxisCellCount: 1,
+          child: _listTile.elementAt(2),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 1,
+          mainAxisCellCount: 1,
+          child: _listTile.elementAt(3),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 4,
+          mainAxisCellCount: 2,
+          child: _listTile.elementAt(4),
+        ),
+      ],
+    );
+
     // return StaggeredGridView.countBuilder(
     //   crossAxisCount: 4,
     //   itemCount: post.relatedPhotos.length,
@@ -179,5 +233,20 @@ class SinglePost extends StatelessWidget {
     //   staggeredTileBuilder: (int index) =>
     //       StaggeredTile.count(2, index.isEven ? 3 : 2),
     // );
+  }
+}
+
+class BackGroundTile extends StatelessWidget {
+  final Color backgroundColor;
+  final IconData icondata;
+
+  BackGroundTile({this.backgroundColor, this.icondata});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: backgroundColor,
+      child: Icon(icondata, color: Colors.white),
+    );
   }
 }
