@@ -26,7 +26,7 @@ class Sample {
               'assets/photos/one.jpg',
               'assets/photos/two.jpg',
               'assets/photos/three.jpg',
-            ]
+            ], user: yasir
           ),
           new Post(
             location: "Herat, Afghanistan",
@@ -35,7 +35,7 @@ class Sample {
               'assets/photos/six.jpg',
               'assets/photos/eight.jpg',
               'assets/photos/two.jpg',
-            ]
+            ], user: yasir
           )
         ]
       ),
@@ -55,7 +55,7 @@ class Sample {
               'assets/photos/one.jpg',
               'assets/photos/two.jpg',
               'assets/photos/three.jpg',
-            ]
+            ], user: yasir
           ),
           new Post(
             location: "Herat, Afghanistan",
@@ -64,7 +64,7 @@ class Sample {
               'assets/photos/six.jpg',
               'assets/photos/eight.jpg',
               'assets/photos/two.jpg',
-            ]
+            ], user: yasir
           )
         ]
       ),
@@ -94,7 +94,7 @@ class Sample {
               'assets/photos/five.jpg',
               'assets/photos/six.jpg',
               'assets/photos/seven.jpg',
-            ]
+            ], user: yasir
           ),
           new Post(
             location: "Herat, Afghanistan",
@@ -103,7 +103,7 @@ class Sample {
               'assets/photos/six.jpg',
               'assets/photos/eight.jpg',
               'assets/photos/two.jpg',
-            ]
+            ], user: yasir
           )
         ]
       ),

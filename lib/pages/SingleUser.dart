@@ -9,7 +9,7 @@ import 'package:flutter_photography/models/User.dart';
 class SingleUser extends StatefulWidget {
   final User user;
 
-  const SingleUser({Key key, this.user}) : super(key: key);
+  const SingleUser({Key? key, required this.user}) : super(key: key);
   
   @override
   _SingleUserState createState() => _SingleUserState();
@@ -31,7 +31,7 @@ class _SingleUserState extends State<SingleUser> {
         ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.more_horiz, size: 25, color: Colorsys.grey,),
+            icon: Icon(Icons.more_horiz, size: 25, color: Colorsys.grey,), onPressed: () {  },
           )
         ],
       ),
@@ -272,7 +272,7 @@ class _SingleUserState extends State<SingleUser> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey[300],
+              color: Colorsys.grey300,
               blurRadius: 20,
               offset: Offset(0, 10)
             )
