@@ -32,6 +32,7 @@ dependencies:
   flutter_svg: ^1.1.0
   sqflite: any
   path_provider: any
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

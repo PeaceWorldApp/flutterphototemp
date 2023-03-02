@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_photography/models/Attendence.dart';
 import 'package:flutter_photography/models/Student.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -28,7 +29,7 @@ class DBProvider {
   initDB() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, "TestDB.db");
-    return await openDatabase(path, version: 1, onOpen: (db) {},
+    return await openDatabase(path, version: 2, onOpen: (db) {},
         onCreate: (Database db, int version) async {
       await db.execute("CREATE TABLE Student ("
           "id INTEGER PRIMARY KEY,"
@@ -36,11 +37,12 @@ class DBProvider {
           "last_name TEXT,"
           "note TEXT"
           ")");
-      // await db.execute("CREATE TABLE Attendance ("
-      //     "id INTEGER PRIMARY KEY,"
-      //     "stu_id TEXT,"
-      //     "date DATE"
-      //     ")");
+      await db.execute("CREATE TABLE Attendence ("
+          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+          "stdid INTEGER,"
+          "date Date,"
+          "status BOOLEAN"
+          ")");
     });
   }
 
@@ -57,6 +59,31 @@ class DBProvider {
         " VALUES (?,?,?,?)",
         [id, newStd.firstName, newStd.lastName, newStd.note]);
     return raw;
+  }
+
+  addMultiAttend(String dateNow) async {
+    final db = await database;
+    //get the biggest id in the table
+    // var table = await db!.rawQuery("SELECT MAX(id)+1 as id FROM Attendence");
+    // var id = table.first["id"] ?? 1;
+
+    //select all students
+    var resStudents = await db!.query("Student");
+    List<Student> stdList = resStudents.isNotEmpty
+        ? resStudents.map((c) => Student.fromMap(c)).toList()
+        : [];
+    //traverse each student, and insert a new record to Attendence
+    // print(stdList.length);
+    for (var std in stdList) {
+      await db.rawInsert(
+          "INSERT Into Attendence (stdid,date,status)"
+          " VALUES (?,?,?)",
+          [std.id, dateNow, false]);
+    }
+
+    //insert to the table using the new id
+
+    // return raw;
   }
 
   // newClient(Client newClient) async {
@@ -121,9 +148,39 @@ class DBProvider {
     return db!.delete("Student", where: "id = ?", whereArgs: [id]);
   }
 
+  deleteAttendence(int id) async {
+    final db = await database;
+    return db!.delete("Attendence", where: "id = ?", whereArgs: [id]);
+  }
+
   deleteAll() async {
     final db = await database;
     db!.rawDelete("Delete * from Student");
+  }
+
+  Future<List<Attendence>> getAllAttendenceCustom(String dateStr) async {
+    final db = await database;
+    List<Attendence> list = [];
+    var res =
+        await db!.query("Attendence", where: "date = ?", whereArgs: [dateStr]);
+    if (res.isEmpty) {
+      addMultiAttend(dateStr);
+    }
+
+    list = res.map((c) => Attendence.fromMap(c)).toList();
+
+    return list;
+  }
+
+  Future<List<Attendence>> checkAttend(String dateStr) async {
+    final db = await database;
+    List<Attendence> list = [];
+    String sqlQuery =
+        "SELECT * FROM Attendence a, Student s WHERE a.stdid=s.id";
+    var res = await db!.rawQuery(sqlQuery);
+
+    list = res.map((c) => Attendence.fromMap(c)).toList();
+    return list;
   }
 
   // getClient(int id) async {

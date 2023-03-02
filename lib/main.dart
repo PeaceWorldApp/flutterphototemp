@@ -1,257 +1,396 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_photography/Database.dart';
-import 'package:flutter_photography/data/DatabaseBloc.dart';
-import 'package:flutter_photography/ClientModel.dart';
-
-import 'dart:math' as math;
-
-import 'package:flutter_photography/data/StudentBloc.dart';
-import 'package:flutter_photography/models/Student.dart';
-import 'package:flutter_photography/pages/MainStd.dart';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_photography/data/Sample.dart';
+import 'package:flutter_photography/helper/Colorsys.dart';
+import 'package:flutter_photography/mainAttend.dart';
+import 'package:flutter_photography/mainListStd.dart';
+import 'package:flutter_photography/models/BackGroundTile.dart';
+import 'package:flutter_photography/models/Post.dart';
+import 'package:flutter_photography/pages/SinglePost.dart';
+import 'package:flutter_photography/pages/SingleUser.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_photography/constants.dart';
 
-void main() => runApp(new MyApp());
+void main() {
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: HomePage(),
+  ));
+}
 
-class MyApp extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    var routes = <String, WidgetBuilder>{
-      MainStd.routeName: (BuildContext context) =>
-          new MainStd(title: "MainStudent"),
-    };
-    return new MaterialApp(
-      title: 'Flutter Demo',
-      theme: new ThemeData(
-        primarySwatch: Colors.blue,
+    return Scaffold(
+      backgroundColor: Colorsys.lightGrey,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colorsys.lightGrey,
+        leading: IconButton(
+          onPressed: () {},
+          icon: Icon(
+            Icons.menu,
+            color: Colorsys.darkGray,
+          ),
+        ),
       ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
-      routes: routes,
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: <Widget>[
+            titleBox(),
+            SizedBox(
+              height: 40,
+            ),
+            makeWelcomeScreen()
+            // searchBox(),
+            // SizedBox(height: 40,),
+            // Container(
+            //   padding: EdgeInsets.all(20),
+            //   width: double.infinity,
+            //   decoration: BoxDecoration(
+            //     borderRadius: BorderRadius.only(
+            //       topLeft: Radius.circular(20),
+            //       topRight: Radius.circular(20)
+            //     ),
+            //     color: Colors.white
+            //   ),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: <Widget>[
+            //       Text("For you", style: TextStyle(
+            //         color: Colorsys.darkGray,
+            //         fontSize: 20,
+            //         fontWeight: FontWeight.bold
+            //       ),),
+            //       SizedBox(height: 20,),
+            //       Container(
+            //         decoration: BoxDecoration(
+            //           border: Border(bottom: BorderSide(
+            //             color: Colorsys.lightGrey
+            //           ))
+            //         ),
+            //         child: Row(
+            //           crossAxisAlignment: CrossAxisAlignment.start,
+            //           children: <Widget>[
+            //             Column(
+            //               crossAxisAlignment: CrossAxisAlignment.start,
+            //               children: <Widget>[
+            //                 Text("Recommend", style: TextStyle(
+            //                   color: Colorsys.black,
+            //                   fontWeight: FontWeight.bold,
+            //                   fontSize: 15
+            //                 ),),
+            //                 Container(
+            //                   width: 50,
+            //                   padding: EdgeInsets.only(bottom: 10),
+            //                   decoration: BoxDecoration(
+            //                     border: Border(bottom: BorderSide(
+            //                       color: Colorsys.orange,
+            //                       width: 3
+            //                     ))
+            //                   ),
+            //                 )
+            //               ],
+            //             ),
+            //             SizedBox(width: 20,),
+            //             Text("Likes", style: TextStyle(
+            //               color: Colorsys.grey,
+            //               fontWeight: FontWeight.w500,
+            //               fontSize: 15
+            //             ),)
+            //           ],
+            //         ),
+            //       ),
+            //       SizedBox(height: 30,),
+            //       makePost(Sample.postOne),
+            //       makePost(Sample.postTwo),
+            //     ],
+            //   ),
+            // )
+          ],
+        ),
+      ),
     );
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => new _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  // void _incrementCounter() {
-  //   Navigator.pushNamed(context, MyItemsPage.routeName);
-  // }
-
-  final stdBloc = StudentBloc();
-  Future<List<Student>>? futureList;
-
-  Future<List<Student>> fetchList() async {
-    return Future.delayed(Duration(seconds: 2), () {
-      return DBProvider.db.getAllStudents();
-    });
-  }
-
-  @override
-  void initState() {
-    futureList = fetchList();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    stdBloc.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // var button = new IconButton(
-    //     icon: new Icon(Icons.access_alarm), onPressed: _onButtonPressed);
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title),
-      ),
-      body: StreamBuilder<List<Student>>(
-        stream: futureList!.asStream(),
-        builder: (BuildContext context, AsyncSnapshot<List<Student>> snapshot) {
-          if (snapshot.hasData) {
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (BuildContext context, int index) {
-                Student item = snapshot.data![index];
-                return Dismissible(
-                  key: UniqueKey(),
-                  background: Container(color: Colors.red),
-                  onDismissed: (direction) {
-                    stdBloc.delete(item.id!);
+  Widget makePost(Post post) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 30),
+      child: Column(
+        children: <Widget>[
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SingleUser(user: post.user)));
+            },
+            child: Row(
+              children: <Widget>[
+                Hero(
+                  transitionOnUserGestures: true,
+                  tag: post.user.username,
+                  child: CircleAvatar(
+                    maxRadius: 28,
+                    backgroundImage: AssetImage(post.user.profilePicture),
+                  ),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        post.user.name,
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            post.location,
+                            style:
+                                TextStyle(fontSize: 13, color: Colorsys.grey),
+                          ),
+                          Text(
+                            post.dateAgo,
+                            style:
+                                TextStyle(fontSize: 13, color: Colorsys.grey),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+          Container(
+            height: 300,
+            padding: EdgeInsets.only(top: 20),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: post.photos.length,
+              itemBuilder: (context, index) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SinglePost(
+                                  post: post,
+                                  image: post.photos[index],
+                                )));
                   },
-                  child: ListTile(
-                    title: Text(item.lastName),
-                    leading: Text(item.id.toString()),
+                  child: AspectRatio(
+                    aspectRatio: 1.2 / 1,
+                    child: Container(
+                      margin: EdgeInsets.only(right: 20),
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage(post.photos[index]),
+                              fit: BoxFit.cover),
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.orange),
+                      child: Stack(
+                        children: <Widget>[
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Container(
+                              margin: EdgeInsets.all(20),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: <Widget>[
+                                  ClipRect(
+                                    child: BackdropFilter(
+                                      filter: ImageFilter.blur(
+                                          sigmaX: 5, sigmaY: 5),
+                                      child: Container(
+                                        width: 30.0,
+                                        height: 30.0,
+                                        padding: EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            color: Colors.grey[600]!
+                                                .withOpacity(0.1)),
+                                        child: Center(
+                                            child: Image.asset(
+                                                'assets/icons/link.png')),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  ClipRect(
+                                    child: BackdropFilter(
+                                      filter: ImageFilter.blur(
+                                          sigmaX: 5, sigmaY: 5),
+                                      child: Container(
+                                        width: 30.0,
+                                        height: 30.0,
+                                        padding: EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            color: Colors.grey[600]!
+                                                .withOpacity(0.1)),
+                                        child: Center(
+                                            child: Image.asset(
+                                                'assets/icons/heart.png')),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
                 );
               },
-            );
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: _onButtonPressed,
-        tooltip: 'Increment',
-        child: new Icon(Icons.add),
+            ),
+          )
+        ],
       ),
     );
   }
 
-//for reload
-  void _onButtonPressed() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => MainStd(title: "MainStudent"))).then((value) {
-            setState(() {
-              futureList = fetchList();
-            });
-    });
+  // Widget searchBox() {
+  //   return Padding(
+  //     padding: EdgeInsets.symmetric(horizontal: 20),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: <Widget>[
+  //         SizedBox(
+  //           height: 20,
+  //         ),
+  //         Text(
+  //           "Best place to \nFind awesome photos",
+  //           style: TextStyle(
+  //               fontSize: 22,
+  //               color: Colorsys.darkGray,
+  //               fontWeight: FontWeight.bold),
+  //         ),
+  //         SizedBox(
+  //           height: 30,
+  //         ),
+  //         Container(
+  //           height: 50,
+  //           padding: EdgeInsets.only(left: 20, right: 3, top: 3, bottom: 3),
+  //           decoration: BoxDecoration(
+  //               borderRadius: BorderRadius.circular(5), color: Colors.white),
+  //           child: Row(
+  //             children: <Widget>[
+  //               Expanded(
+  //                 child: TextField(
+  //                   decoration: InputDecoration(
+  //                       hintText: "Search for photo",
+  //                       hintStyle: TextStyle(color: Colorsys.grey),
+  //                       border: InputBorder.none),
+  //                 ),
+  //               ),
+  //               MaterialButton(
+  //                 onPressed: () {},
+  //                 shape: RoundedRectangleBorder(
+  //                     borderRadius: BorderRadius.circular(5)),
+  //                 height: double.infinity,
+  //                 minWidth: 50,
+  //                 elevation: 0,
+  //                 color: Colorsys.orange,
+  //                 child: Icon(
+  //                   Icons.search,
+  //                   color: Colors.white,
+  //                 ),
+  //               )
+  //             ],
+  //           ),
+  //         )
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  Widget titleBox() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "Student Management",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 30,
+                color: Colorsys.darkGray,
+                fontWeight: FontWeight.bold),
+          ),
+          SizedBox(
+            height: 30,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget makeWelcomeScreen() {
+    return StaggeredGrid.count(
+      crossAxisCount: 4,
+      mainAxisSpacing: 4,
+      crossAxisSpacing: 4,
+      children: [
+        StaggeredGridTile.count(
+            crossAxisCellCount: 2,
+            mainAxisCellCount: 2,
+            child: new InkWell(
+              onTap: () {
+                // print("tapped");
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => MainAttend()));
+              },
+              child: listTile.elementAt(1),
+            )),
+        StaggeredGridTile.count(
+            crossAxisCellCount: 2,
+            mainAxisCellCount: 1,
+            child: new InkWell(
+              onTap: () {
+                // print("tapped");
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => MyApp()));
+              },
+              child: listTile.elementAt(0),
+            )),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 2,
+          mainAxisCellCount: 1,
+          child: listTile.elementAt(3),
+        ),
+        StaggeredGridTile.count(
+          crossAxisCellCount: 4,
+          mainAxisCellCount: 2,
+          child: listTile.elementAt(2),
+        )
+      ],
+    );
   }
 }
-
-// class MyItemsPage extends StatefulWidget {
-//   MyItemsPage({Key? key, required this.title}) : super(key: key);
-
-//   static const String routeName = "/MyItemsPage";
-
-//   final String title;
-
-//   @override
-//   _MyItemsPageState createState() => new _MyItemsPageState();
-// }
-
-/// // 1. After the page has been created, register it with the app routes
-/// routes: <String, WidgetBuilder>{
-///   MyItemsPage.routeName: (BuildContext context) => new MyItemsPage(title: "MyItemsPage"),
-/// },
-///
-/// // 2. Then this could be used to navigate to the page.
-/// Navigator.pushNamed(context, MyItemsPage.routeName);
-///
-
-// class _MyItemsPageState extends State<MyItemsPage> {
-//   @override
-//   Widget build(BuildContext context) {
-//     var button = new IconButton(
-//         icon: new Icon(Icons.arrow_back), onPressed: _onButtonPressed);
-//     return new Scaffold(
-//       appBar: new AppBar(
-//         title: new Text(widget.title),
-//       ),
-//       body: new Container(
-//         child: new Column(
-//           children: <Widget>[new Text('Item1'), new Text('Item2'), button],
-//         ),
-//       ),
-//       floatingActionButton: new FloatingActionButton(
-//         onPressed: _onFloatingActionButtonPressed,
-//         tooltip: 'Add',
-//         child: new Icon(Icons.add),
-//       ),
-//     );
-//   }
-
-//   void _onFloatingActionButtonPressed() {}
-
-//   void _onButtonPressed() {
-//     Navigator.pop(context);
-//   }
-// }
-
-
-// void main() => runApp(MaterialApp(home: MyApp()));
-
-// class MyApp extends StatefulWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   _MyAppState createState() => _MyAppState();
-// }
-
-// class _MyAppState extends State<MyApp> {
-//   // data for testing
-//   // List<Client> testClients = [
-//   //   Client(firstName: "Raouf", lastName: "Rahiche", blocked: false),
-//   //   Client(firstName: "Zaki", lastName: "oun", blocked: true),
-//   //   Client(firstName: "oussama", lastName: "ali", blocked: false),
-//   // ];
-//   List<Student> testStd = [
-//     Student(firstName: "Raouf", lastName: "Rahiche", note: ''),
-//     Student(firstName: "Zaki", lastName: "oun", note: ''),
-//     Student(firstName: "oussama", lastName: "ali", note: ''),
-//   ];
-
-//   // final bloc = ClientsBloc();
-//   final stdBloc = StudentBloc();
-
-//   @override
-//   void dispose() {
-//     stdBloc.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text("Flutter SQLite")),
-//       body: ElevatedButton(
-//         onPressed: () {
-//           // Navigate to the second screen when tapped.
-//           Navigator.of(context).pushReplacement(
-//               MaterialPageRoute(builder: (context) => MainStd()));
-//         },
-//         child: const Text('Launch screen'),
-//       ),
-//       // body: StreamBuilder<List<Student>>(
-//       //   stream: stdBloc.clients,
-//       //   builder: (BuildContext context, AsyncSnapshot<List<Student>> snapshot) {
-//       //     if (snapshot.hasData) {
-//       //       return ListView.builder(
-//       //         itemCount: snapshot.data!.length,
-//       //         itemBuilder: (BuildContext context, int index) {
-//       //           Student item = snapshot.data![index];
-//       //           return Dismissible(
-//       //             key: UniqueKey(),
-//       //             background: Container(color: Colors.red),
-//       //             onDismissed: (direction) {
-//       //               stdBloc.delete(item.id!);
-//       //             },
-//       //             child: ListTile(
-//       //               title: Text(item.lastName),
-//       //               leading: Text(item.id.toString()),
-//       //             ),
-//       //           );
-//       //         },
-//       //       );
-//       //     } else {
-//       //       return Center(child: CircularProgressIndicator());
-//       //     }
-//       //   },
-//       // ),
-
-//       // floatingActionButton: FloatingActionButton(
-//       //   child: Icon(Icons.add),
-//       //   onPressed: () async {
-//       //     Navigator.of(context).pushReplacement(
-//       //         MaterialPageRoute(builder: (context) => MainStd()));
-//       //     // Student rnd = testStd[math.Random().nextInt(testStd.length)];
-//       //     // stdBloc.add(rnd);
-//       //   },
-//       // ),
-//     );
-//   }
-// }
