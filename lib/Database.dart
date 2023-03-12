@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_photography/data/AttendBloc.dart';
 import 'package:flutter_photography/models/Attendence.dart';
 import 'package:flutter_photography/models/Student.dart';
 import 'package:path/path.dart';
@@ -63,27 +64,34 @@ class DBProvider {
 
   addMultiAttend(String dateNow) async {
     final db = await database;
-    //get the biggest id in the table
-    // var table = await db!.rawQuery("SELECT MAX(id)+1 as id FROM Attendence");
-    // var id = table.first["id"] ?? 1;
 
+    String sql = '''
+  INSERT INTO Attendence (
+      stdid,date,status
+    ) VALUES (?, ?,?)
+  ''';
+    //you can get this data from json object /API
+    List<Map> attendData = [];
     //select all students
     var resStudents = await db!.query("Student");
     List<Student> stdList = resStudents.isNotEmpty
         ? resStudents.map((c) => Student.fromMap(c)).toList()
         : [];
+    print("Student lenght: " + stdList.length.toString());
+    int i = 0;
     //traverse each student, and insert a new record to Attendence
-    // print(stdList.length);
-    for (var std in stdList) {
-      await db.rawInsert(
-          "INSERT Into Attendence (stdid,date,status)"
-          " VALUES (?,?,?)",
-          [std.id, dateNow, false]);
+    for (var s in stdList) {
+      Map m = {"stdid": s.id, "date": dateNow, "status": false};
+      attendData.add(m);
+      ++i;
+      print("stt: " + i.toString());
     }
-
-    //insert to the table using the new id
-
-    // return raw;
+    //and then loop your data here
+    var raw = attendData.forEach((element) async {
+      await db.rawInsert(
+          sql, [element['stdid'], element['date'], element['status']]);
+    });
+    return raw;
   }
 
   // newClient(Client newClient) async {
@@ -158,18 +166,23 @@ class DBProvider {
     db!.rawDelete("Delete * from Student");
   }
 
-  Future<List<Attendence>> getAllAttendenceCustom(String dateStr) async {
+  Future<List<Attendence>> getAllAttendences(String dateStr) async {
+    final db = await database;
+    var res =
+        await db!.query("Attendence", where: "date = ?", whereArgs: [dateStr]);
+    List<Attendence> list =
+        res.isNotEmpty ? res.map((c) => Attendence.fromMap(c)).toList() : [];
+    return list;
+  }
+
+  getAllAttendenceCustom(String dateStr) async {
     final db = await database;
     List<Attendence> list = [];
     var res =
         await db!.query("Attendence", where: "date = ?", whereArgs: [dateStr]);
     if (res.isEmpty) {
-      addMultiAttend(dateStr);
+      await addMultiAttend(dateStr);
     }
-
-    list = res.map((c) => Attendence.fromMap(c)).toList();
-
-    return list;
   }
 
   Future<List<Attendence>> checkAttend(String dateStr) async {

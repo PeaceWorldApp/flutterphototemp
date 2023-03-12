@@ -57,43 +57,29 @@ class _MyAttendState extends State<MyAttend> {
 
   Future<List<Attendence>>? futureList;
 
-  // Future<List<Attendence>> fetchList() async {
-  //   return Future.delayed(Duration(seconds: 1), () {
-  //     return DBProvider.db.getAllAttendenceCustom(currentDate);
-  //   });
-  // }
-
-  // Future<int> getLengthOfList() async {
-  //   List<dynamic> list = await DBProvider.db.checkAttend(currentDate);
-  //   return list.length;
-  // }
-
   Future<List<Attendence>> fetchList() async {
-    return DBProvider.db.getAllAttendenceCustom(currentDate);
+    return Future.delayed(Duration(seconds: 2), () async {
+      await attBloc.addCheck(currentDate);
+      return DBProvider.db.getAllAttendences(currentDate);
+    });
   }
 
-  void getLength() async {
-    List<dynamic> list = await DBProvider.db.checkAttend(currentDate);
-    int length = list.length;
-    print(length);
+  @override
+  void initState() {
+    futureList = fetchList();
+    super.initState();
   }
 
-  // @override
-  // void initState() {
-  //   futureList = fetchList();
-  //   super.initState();
-  // }
-
-  // @override
-  // void dispose() {
-  //   attBloc.dispose();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    attBloc.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    getLength();
-    futureList = fetchList();
+    // getLength();
+    // futureList = fetchList();
     // var button = new IconButton(
     //     icon: new Icon(Icons.access_alarm), onPressed: _onButtonPressed);
     return new Scaffold(
@@ -300,6 +286,41 @@ class _MyAttendState extends State<MyAttend> {
 //       //     // stdBloc.add(rnd);
 //       //   },
 //       // ),
+//     );
+//   }
+// }
+
+
+// class MyListView extends StatelessWidget {
+//   final Future<List<String>> futureItems;
+
+//   MyListView({required this.futureItems});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return FutureBuilder<List<String>>(
+//       future: futureItems,
+//       builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+//         if (snapshot.connectionState == ConnectionState.waiting) {
+//           return Center(
+//             child: CircularProgressIndicator(),
+//           );
+//         } else if (snapshot.hasError) {
+//           return Center(
+//             child: Text('Error loading items'),
+//           );
+//         } else {
+//           List<String> items = snapshot.data!;
+//           return ListView.builder(
+//             itemCount: items.length,
+//             itemBuilder: (BuildContext context, int index) {
+//               return ListTile(
+//                 title: Text(items[index]),
+//               );
+//             },
+//           );
+//         }
+//       },
 //     );
 //   }
 // }

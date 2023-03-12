@@ -14,20 +14,19 @@ class AttendBloc {
   get clients => _stdController.stream;
   String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-  // getAtds() async {
-  //   _stdController.sink
-  //       .add(await DBProvider.db.getAllAttendenceCustom(currentDate));
-  // }
+  getAtds(String currentDate) async {
+    _stdController.sink.add(await DBProvider.db.getAllAttendences(currentDate));
+  }
 
   Future<void> delete(int id) async {
     await DBProvider.db.deleteAttendence(id);
     // await getAtds();
   }
 
-  // Future<void> add(Student s) async {
-  //   await DBProvider.db.newStudent(s);
-  //   await getStds();
-  // }
+  Future<void> addCheck(String dateStr) async {
+    await DBProvider.db.getAllAttendenceCustom(dateStr);
+    await getAtds(dateStr);
+  }
 
   dispose() {
     _stdController.close();
