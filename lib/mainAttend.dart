@@ -99,7 +99,8 @@ class _MyAttendState extends State<MyAttend> {
                     key: UniqueKey(),
                     background: Container(color: Colors.red),
                     onDismissed: (direction) {
-                      attBloc.delete(item.id!);
+                      // attBloc.delete(item.id!);
+                      attBloc.update(item.id!);
                     },
                     child: ListTile(
                       title: Text(item.stdid.toString() +

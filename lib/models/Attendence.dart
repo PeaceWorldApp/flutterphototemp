@@ -35,4 +35,9 @@ class Attendence {
         "date": date,
         "status": status,
       };
+  int get _status => this.status;
+
+  set myValue(int value) {
+    this.status = value;
+  }
 }

@@ -28,6 +28,11 @@ class AttendBloc {
     await getAtds(dateStr);
   }
 
+  Future<void> update(int id) async {
+    await DBProvider.db.updateAtt(id);
+    await getAtds(currentDate);
+  }
+
   dispose() {
     _stdController.close();
   }

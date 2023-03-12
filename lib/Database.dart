@@ -134,11 +134,32 @@ class DBProvider {
     return res;
   }
 
+  //edit the status of an attendance
+  updateAtt(int id) async {
+    final db = await database;
+    getAttendence(id).then((value) {
+      Attendence att = value;
+      att.status = 1;
+      // print(att.status);
+
+      var res = db!.update("Attendence", att.toMap(),
+          where: "id = ?", whereArgs: [att.id]);
+      return res;
+    });
+  }
+
 //get a student by a given id
   getStudent(int id) async {
     final db = await database;
     var res = await db!.query("Student", where: "id = ?", whereArgs: [id]);
     return res.isNotEmpty ? Student.fromMap(res.first) : null;
+  }
+
+  //get an attendence by a given id
+  getAttendence(int id) async {
+    final db = await database;
+    var res = await db!.query("Attendence", where: "id = ?", whereArgs: [id]);
+    return res.isNotEmpty ? Attendence.fromMap(res.first) : null;
   }
 
   //get all students
@@ -168,8 +189,8 @@ class DBProvider {
 
   Future<List<Attendence>> getAllAttendences(String dateStr) async {
     final db = await database;
-    var res =
-        await db!.query("Attendence", where: "date = ?", whereArgs: [dateStr]);
+    var res = await db!.query("Attendence",
+        where: "date = ? and status = ?", whereArgs: [dateStr, 0]);
     List<Attendence> list =
         res.isNotEmpty ? res.map((c) => Attendence.fromMap(c)).toList() : [];
     return list;
@@ -178,8 +199,8 @@ class DBProvider {
   getAllAttendenceCustom(String dateStr) async {
     final db = await database;
     List<Attendence> list = [];
-    var res =
-        await db!.query("Attendence", where: "date = ?", whereArgs: [dateStr]);
+    var res = await db!.query("Attendence",
+        where: "date = ? and status = ?", whereArgs: [dateStr, 0]);
     if (res.isEmpty) {
       await addMultiAttend(dateStr);
     }
