@@ -47,6 +47,7 @@ class DBProvider {
     });
   }
 
+//Add methods
   //Create a student
   newStudent(Student newStd) async {
     final db = await database;
@@ -94,6 +95,34 @@ class DBProvider {
     return raw;
   }
 
+  addSomeNewStudent(String dateNow, List<String> list) async {
+    final db = await database;
+
+    String sql = '''
+    INSERT INTO Attendence (
+        stdid,date,status
+      ) VALUES (?, ?,?)
+    ''';
+    //you can get this data from json object /API
+    List<Map> attendData = [];
+    //select all students
+
+    int i = 0;
+    //traverse each student, and insert a new record to Attendence
+    for (var s in list) {
+      Map m = {"stdid": s, "date": dateNow, "status": false};
+      attendData.add(m);
+      ++i;
+      print("stt: " + i.toString());
+    }
+    //and then loop your data here
+    var raw = attendData.forEach((element) async {
+      await db!.rawInsert(
+          sql, [element['stdid'], element['date'], element['status']]);
+    });
+    return raw;
+  }
+
   // newClient(Client newClient) async {
   //   final db = await database;
   //   //get the biggest id in the table
@@ -125,7 +154,7 @@ class DBProvider {
   //       where: "id = ?", whereArgs: [newClient.id]);
   //   return res;
   // }
-
+//Edit Methods
 //edit a student
   updateStd(Student std) async {
     final db = await database;
@@ -148,8 +177,9 @@ class DBProvider {
     });
   }
 
+//Get methods
 //get a student by a given id
-  getStudent(int id) async {
+  Future<Student?> getStudent(int id) async {
     final db = await database;
     var res = await db!.query("Student", where: "id = ?", whereArgs: [id]);
     return res.isNotEmpty ? Student.fromMap(res.first) : null;
@@ -172,6 +202,100 @@ class DBProvider {
     return list;
   }
 
+  Future<List<Student>> getAllStudents2() async {
+    final db = await database;
+
+    var results = await db!.query("Student");
+    List<Student> expenses = [];
+    results.forEach((result) {
+      Student expense = Student.fromMap(result);
+      expenses.add(expense);
+    });
+    return expenses;
+  }
+
+  Future<List<Attendence>> getAllAttendences(String dateStr) async {
+    final db = await database;
+    var res = await db!.query("Attendence",
+        // where: "date = ?", whereArgs: [dateStr]);
+        where: "date = ? and status = ?",
+        whereArgs: [dateStr, 0]);
+    List<Attendence> list =
+        res.isNotEmpty ? res.map((c) => Attendence.fromMap(c)).toList() : [];
+
+    var resStudents = await db!.query("Student");
+    List<Student> stdList = resStudents.isNotEmpty
+        ? resStudents.map((c) => Student.fromMap(c)).toList()
+        : [];
+    int studentNumberNow = stdList.length;
+    if (list.length < studentNumberNow) {
+      List<String> list = [];
+      String sqlQuery =
+          "SELECT DISTINCT u.id as uid FROM Attendence a, Student u WHERE u.id not in " +
+              "(select att.stdid from Attendence att) and a.date ='" +
+              dateStr +
+              "'";
+      var res = await db!.rawQuery(sqlQuery);
+      print("Number:" + res.length.toString());
+      // list = res.map((c) => ).toList()
+      list = await res.map((c) => c['uid'].toString()).toList();
+      List<String> data = await list;
+      for (var element in data) {
+        print("Student id: " + element + "\n");
+      }
+      await addSomeNewStudent(dateStr, data);
+    } else if (list.length > studentNumberNow) {
+      List<String> list = [];
+      String sqlQuery =
+          "SELECT DISTINCT a.id as aid FROM Attendence a, Student u " +
+              "WHERE a.stdid not in (select st.id from Student st) and a.date = '" +
+              dateStr +
+              "'";
+      var res = await db!.rawQuery(sqlQuery);
+      print("Number:" + res.length.toString());
+      // list = res.map((c) => ).toList()
+      list = await res.map((c) => c['aid'].toString()).toList();
+      List<String> data = await list;
+      for (var element in data) {
+        print("Attendence id not exist anymore: " + element + "\n");
+      }
+      await removeSomeStudent(data);
+    }
+    return list;
+  }
+
+/**
+ * SELECT DISTINCT u.id FROM `attend` a, `user` u WHERE u.id not in (select att.user_id from attend att) and a.date = '2023-03-03';
+ * SELECT DISTINCT a.user_id FROM `attend` a, `Student` u WHERE a.user_id not in (select st.id from student st) and a.date = '2023-03-03';
+ */
+  Future<List<String>> getNewStudent(String dateStr) async {
+    final db = await database;
+    List<String> list = [];
+    String sqlQuery =
+        "SELECT DISTINCT u.id as uid FROM Attendence a, Student u WHERE u.id not in " +
+            "(select att.stdid from Attendence att) and a.date ='" +
+            dateStr +
+            "'";
+    var res = await db!.rawQuery(sqlQuery);
+    print(res.length);
+    // list = res.map((c) => ).toList()
+    list = res.map((c) => c['uid'].toString()).toList();
+    return list;
+  }
+
+  getAllAttendenceCustom(String dateStr) async {
+    final db = await database;
+    List<Attendence> list = [];
+    var res =
+        await db!.query("Attendence", where: "date = ?", whereArgs: [dateStr]);
+    // where: "date = ? and status = ?", whereArgs: [dateStr, 0]);
+    if (res.isEmpty) {
+      await addMultiAttend(dateStr);
+    }
+  }
+
+  ///Delete
+
   deleteStudent(int id) async {
     final db = await database;
     return db!.delete("Student", where: "id = ?", whereArgs: [id]);
@@ -187,23 +311,30 @@ class DBProvider {
     db!.rawDelete("Delete * from Student");
   }
 
-  Future<List<Attendence>> getAllAttendences(String dateStr) async {
+  removeSomeStudent(List<String> list) async {
     final db = await database;
-    var res = await db!.query("Attendence",
-        where: "date = ? and status = ?", whereArgs: [dateStr, 0]);
-    List<Attendence> list =
-        res.isNotEmpty ? res.map((c) => Attendence.fromMap(c)).toList() : [];
-    return list;
-  }
 
-  getAllAttendenceCustom(String dateStr) async {
-    final db = await database;
-    List<Attendence> list = [];
-    var res = await db!.query("Attendence",
-        where: "date = ? and status = ?", whereArgs: [dateStr, 0]);
-    if (res.isEmpty) {
-      await addMultiAttend(dateStr);
+    String sql = '''
+    DELETE FROM Attendence
+      WHERE id = ?
+    ''';
+    //you can get this data from json object /API
+    List<Map> attendData = [];
+    //select all students
+
+    int i = 0;
+    //traverse each student, and insert a new record to Attendence
+    for (var s in list) {
+      Map m = {"aid": int.parse(s)};
+      attendData.add(m);
+      ++i;
+      print("stt: " + i.toString());
     }
+    //and then loop your data here
+    var raw = attendData.forEach((element) async {
+      await db!.rawQuery(sql, [element['aid']]);
+    });
+    return raw;
   }
 
   Future<List<Attendence>> checkAttend(String dateStr) async {
