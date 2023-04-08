@@ -3,8 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_photography/data/Sample.dart';
 import 'package:flutter_photography/helper/Colorsys.dart';
-import 'package:flutter_photography/mainAttend.dart';
-import 'package:flutter_photography/mainListStd.dart';
+import 'package:flutter_photography/pages/MainSearch.dart';
+import 'package:flutter_photography/pages/mainAttend.dart';
+import 'package:flutter_photography/pages/mainListStd.dart';
 import 'package:flutter_photography/models/BackGroundTile.dart';
 import 'package:flutter_photography/models/Post.dart';
 import 'package:flutter_photography/pages/SinglePost.dart';
@@ -381,10 +382,16 @@ class _HomePageState extends State<HomePage> {
               child: listTile.elementAt(0),
             )),
         StaggeredGridTile.count(
-          crossAxisCellCount: 2,
-          mainAxisCellCount: 1,
-          child: listTile.elementAt(3),
-        ),
+            crossAxisCellCount: 2,
+            mainAxisCellCount: 1,
+            child: new InkWell(
+              onTap: () {
+                // print("tapped");
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => MainSearch()));
+              },
+              child: listTile.elementAt(3),
+            )),
         StaggeredGridTile.count(
           crossAxisCellCount: 4,
           mainAxisCellCount: 2,

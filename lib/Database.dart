@@ -42,7 +42,15 @@ class DBProvider {
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
           "stdid INTEGER,"
           "date Date,"
+          "note TEXT,"
           "status BOOLEAN"
+          ")");
+      await db.execute("CREATE TABLE Fee("
+          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+          "stdid INTEGER,"
+          "money INTEGER,"
+          "date Date,"
+          "note TEXT"
           ")");
     });
   }
@@ -68,8 +76,8 @@ class DBProvider {
 
     String sql = '''
   INSERT INTO Attendence (
-      stdid,date,status
-    ) VALUES (?, ?,?)
+      stdid,date,note,status
+    ) VALUES (?,?, ?,?)
   ''';
     //you can get this data from json object /API
     List<Map> attendData = [];
@@ -90,7 +98,7 @@ class DBProvider {
     //and then loop your data here
     var raw = attendData.forEach((element) async {
       await db.rawInsert(
-          sql, [element['stdid'], element['date'], element['status']]);
+          sql, [element['stdid'], element['date'], "", element['status']]);
     });
     return raw;
   }
@@ -100,8 +108,8 @@ class DBProvider {
 
     String sql = '''
     INSERT INTO Attendence (
-        stdid,date,status
-      ) VALUES (?, ?,?)
+        stdid,date,note,status
+      ) VALUES (?,?, ?,?)
     ''';
     //you can get this data from json object /API
     List<Map> attendData = [];
@@ -118,7 +126,7 @@ class DBProvider {
     //and then loop your data here
     var raw = attendData.forEach((element) async {
       await db!.rawInsert(
-          sql, [element['stdid'], element['date'], element['status']]);
+          sql, [element['stdid'], element['date'], "", element['status']]);
     });
     return raw;
   }
@@ -236,7 +244,7 @@ class DBProvider {
               dateStr +
               "'";
       var res = await db!.rawQuery(sqlQuery);
-      print("Number:" + res.length.toString());
+      // print("Number:" + res.length.toString());
       // list = res.map((c) => ).toList()
       list = await res.map((c) => c['uid'].toString()).toList();
       List<String> data = await list;
@@ -252,7 +260,7 @@ class DBProvider {
               dateStr +
               "'";
       var res = await db!.rawQuery(sqlQuery);
-      print("Number:" + res.length.toString());
+      // print("Number:" + res.length.toString());
       // list = res.map((c) => ).toList()
       list = await res.map((c) => c['aid'].toString()).toList();
       List<String> data = await list;
@@ -261,6 +269,16 @@ class DBProvider {
       }
       await removeSomeStudent(data);
     }
+    return list;
+  }
+
+  Future<List<Attendence>> getAllAttendencesByStd(String stdCode) async {
+    int stdId = int.parse(stdCode);
+    final db = await database;
+    var res = await db!.query("Attendence",
+        where: "stdid = ? and status = ?", whereArgs: [stdId, 1]);
+    List<Attendence> list =
+        res.isNotEmpty ? res.map((c) => Attendence.fromMap(c)).toList() : [];
     return list;
   }
 

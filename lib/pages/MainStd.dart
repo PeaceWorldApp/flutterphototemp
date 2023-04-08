@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_photography/constants.dart';
 import 'package:flutter_photography/data/StudentBloc.dart';
-import 'package:flutter_photography/mainListStd.dart';
+import 'package:flutter_photography/pages/mainListStd.dart';
 import 'package:flutter_photography/models/Student.dart';
 import 'package:flutter_photography/view/components/background.dart';
 import 'package:flutter_photography/view/welcome_image.dart';
@@ -137,44 +137,58 @@ class _StdFormState extends State<StdForm> {
         SizedBox(
           height: defaultPadding * 0.75,
         ),
-        Hero(
-          tag: "add_std_1",
-          child:
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.center,
-              //   children: [
-              ElevatedButton(
-            child: Text("Save".toUpperCase()),
-            onPressed: () async {
-              // buildSnackError("Sendiing", context, size);
-              if (_fnameCatKey.currentState!.validate()) {
-                if (_lnameCatKey.currentState!.validate()) {
-                  Student s = new Student(
-                      firstName: textFieldsCatString[0],
-                      lastName: textFieldsCatString[1],
-                      note: textFieldsCatString[2]);
-                  stdBloc.add(s);
-                  // db.collection("category").add(cat).then(
-                  //     (DocumentReference ref) => buildSnackError(
-                  //         "Sendiing with id: ${ref.id}", context, size));
-                }
-              }
-            },
-          ),
-
-          // SizedBox(
-          //   width: defaultPadding*0.5,
-          // ),
-          // ElevatedButton(
-          //     child: Text("Reset".toUpperCase()),
-          //     onPressed: () {
-          //       _fnameCatKey.currentState!.reset();
-          //       _lnameCatKey.currentState!.reset();
-          //       _noteCatKey.currentState!.reset();
-          //     })
-          // ],
-          // )
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Hero(
+              tag: "add_std_1",
+              child: ElevatedButton(
+                child: Text("Save".toUpperCase()),
+                onPressed: () async {
+                  // buildSnackError("Sendiing", context, size);
+                  if (_fnameCatKey.currentState!.validate()) {
+                    if (_lnameCatKey.currentState!.validate()) {
+                      Student s = new Student(
+                          firstName: textFieldsCatString[0],
+                          lastName: textFieldsCatString[1],
+                          note: textFieldsCatString[2]);
+                      stdBloc.add(s);
+                      // db.collection("category").add(cat).then(
+                      //     (DocumentReference ref) => buildSnackError(
+                      //         "Sendiing with id: ${ref.id}", context, size));
+                    }
+                  }
+                },
+              ),
+            ),
+            SizedBox(
+              width: defaultPadding * 0.5,
+            ),
+            Hero(
+              tag: "reset",
+              child: ElevatedButton(
+                child: Text("Reset".toUpperCase()),
+                onPressed: () {
+                  _fnameCatKey.currentState!.reset();
+                  _lnameCatKey.currentState!.reset();
+                  _noteCatKey.currentState!.reset();
+                },
+              ),
+            ),
+          ],
         ),
+        // SizedBox(
+        //   width: defaultPadding*0.5,
+        // ),
+        // ElevatedButton(
+        //     child: Text("Reset".toUpperCase()),
+        //     onPressed: () {
+        // _fnameCatKey.currentState!.reset();
+        // _lnameCatKey.currentState!.reset();
+        // _noteCatKey.currentState!.reset();
+        //     })
+        // ],
+        // )
       ],
     ));
   }
