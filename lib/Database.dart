@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter_photography/data/AttendBloc.dart';
 import 'package:flutter_photography/models/Attendence.dart';
+import 'package:flutter_photography/models/Fee.dart';
 import 'package:flutter_photography/models/Student.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -43,13 +45,12 @@ class DBProvider {
           "stdid INTEGER,"
           "date Date,"
           "note TEXT,"
-          "status BOOLEAN"
+          "status BOOLEAN,"
+          "feid INTEGER"
           ")");
       await db.execute("CREATE TABLE Fee("
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-          "stdid INTEGER,"
           "money INTEGER,"
-          "date Date,"
           "note TEXT"
           ")");
     });
@@ -71,13 +72,41 @@ class DBProvider {
     return raw;
   }
 
+  newFee(Fee newFee, int attid) async {
+    final db = await database;
+    //get the biggest id in the table
+    var table = await db!.rawQuery("SELECT MAX(id)+1 as id FROM Fee");
+    var id = table.first["id"] ?? 1;
+    // int id = table.first["id"] as int;
+    //insert to the table using the new id
+
+    var raw = await db.rawInsert(
+        "INSERT Into Fee (id,money,note)"
+        " VALUES (?,?,?)",
+        [id, newFee.money, newFee.note]);
+    int count = await db
+        .rawUpdate('UPDATE Attendence SET feid = ? WHERE id = ?', [id, attid]);
+    print('updated:atte $count');
+    // getAttendence(attid).then((value) {
+    //   Attendence att = value;
+    //   int iii = (int) id;
+    //   att.feid = iii;
+    //   // print(att.status);
+
+    //   var res = db!.update("Attendence", att.toMap(),
+    //       where: "id = ?", whereArgs: [attid]);
+    //   // return res;
+    // });
+    return raw;
+  }
+
   addMultiAttend(String dateNow) async {
     final db = await database;
 
     String sql = '''
   INSERT INTO Attendence (
-      stdid,date,note,status
-    ) VALUES (?,?, ?,?)
+      stdid,date,note,status,feid
+    ) VALUES (?,?,?,?,?)
   ''';
     //you can get this data from json object /API
     List<Map> attendData = [];
@@ -98,8 +127,14 @@ class DBProvider {
     //and then loop your data here
     var raw = attendData.forEach((element) async {
       await db.rawInsert(
-          sql, [element['stdid'], element['date'], "", element['status']]);
+        sql,
+        [element['stdid'], element['date'], "", element['status'], 0],
+      );
     });
+    var table =
+        await db!.rawQuery("SELECT feid FROM Attendence WHERE stdid = 1");
+    var id = table.first["feid"] ?? 1;
+    print(id);
     return raw;
   }
 
@@ -108,8 +143,8 @@ class DBProvider {
 
     String sql = '''
     INSERT INTO Attendence (
-        stdid,date,note,status
-      ) VALUES (?,?, ?,?)
+        stdid,date,note,status,feid
+      ) VALUES (?,?,?,?,?)
     ''';
     //you can get this data from json object /API
     List<Map> attendData = [];
@@ -126,8 +161,12 @@ class DBProvider {
     //and then loop your data here
     var raw = attendData.forEach((element) async {
       await db!.rawInsert(
-          sql, [element['stdid'], element['date'], "", element['status']]);
+          sql, [element['stdid'], element['date'], "", element['status'], 0]);
     });
+    var table =
+        await db!.rawQuery("SELECT feid FROM Attendence WHERE stdid = 1");
+    var id = table.first["feid"] ?? 1;
+    print(id);
     return raw;
   }
 
@@ -171,6 +210,20 @@ class DBProvider {
     return res;
   }
 
+  updateFee(Fee s) async {
+    final db = await database;
+    getFee(s.id).then((value) {
+      Fee old = value;
+      old.money = s.money;
+      old.note = s.note;
+      // print(att.status);
+
+      var res =
+          db!.update("Fee", old.toMap(), where: "id = ?", whereArgs: [old.id]);
+      return res;
+    });
+  }
+
   //edit the status of an attendance
   updateAtt(int id) async {
     final db = await database;
@@ -183,6 +236,20 @@ class DBProvider {
           where: "id = ?", whereArgs: [att.id]);
       return res;
     });
+  }
+
+  addFee(int stdid, int money, String date, String note) async {
+    final db = await database;
+    //get the biggest id in the table
+    var table = await db!.rawQuery("SELECT MAX(id)+1 as id FROM Fee");
+    var id = table.first["id"] ?? 1;
+    // int id = table.first["id"] as int;
+    //insert to the table using the new id
+    var raw = await db.rawInsert(
+        "INSERT Into Fee (id,stdid,money,date,note)"
+        " VALUES (?,?,?,?,?)",
+        [id, stdid, money, date, note]);
+    return raw;
   }
 
 //Get methods
@@ -198,6 +265,12 @@ class DBProvider {
     final db = await database;
     var res = await db!.query("Attendence", where: "id = ?", whereArgs: [id]);
     return res.isNotEmpty ? Attendence.fromMap(res.first) : null;
+  }
+
+  getFee(int? feid) async {
+    final db = await database;
+    var res = await db!.query("Fee", where: "id = ?", whereArgs: [feid]);
+    return res.isNotEmpty ? Fee.fromMap(res.first) : null;
   }
 
   //get all students
@@ -230,12 +303,13 @@ class DBProvider {
         whereArgs: [dateStr, 0]);
     List<Attendence> list =
         res.isNotEmpty ? res.map((c) => Attendence.fromMap(c)).toList() : [];
-
+    // print("attdent: " + list.length.toString());
     var resStudents = await db!.query("Student");
     List<Student> stdList = resStudents.isNotEmpty
         ? resStudents.map((c) => Student.fromMap(c)).toList()
         : [];
     int studentNumberNow = stdList.length;
+    // print('studentNumberNow ' + studentNumberNow.toString());
     if (list.length < studentNumberNow) {
       List<String> list = [];
       String sqlQuery =
@@ -308,9 +382,60 @@ class DBProvider {
         await db!.query("Attendence", where: "date = ?", whereArgs: [dateStr]);
     // where: "date = ? and status = ?", whereArgs: [dateStr, 0]);
     if (res.isEmpty) {
+      print('add more');
       await addMultiAttend(dateStr);
     }
   }
+
+  // getFeeByMoney() async {
+  //  final db = await database;
+  // List<Fee> list = [];
+  // var res =
+  //     await db!.query("Fee", where: "date = ?", whereArgs: [dateStr]);
+
+  // List<Fee> list = [];
+  // String sqlQuery = "SELECT money FROM Fee f WHERE f.stdid=" +
+  //     stdid.toString() +
+  //     " and f.date='" +
+  //     dateStr +
+  //     "'";
+  // var res = await db!.rawQuery(sqlQuery);
+  // // print("Database getFee: " + Sqflite.firstIntValue(res).toString());
+  // if (Sqflite.firstIntValue(res) == null) {
+  //   return 0;
+  // } else {
+  //   list = res.map((c) => int.parse(c['money'].toString())).toList();
+  //   return list[0];
+  // }
+  // }
+
+  Future<List<Fee>> getAllFee() async {
+    final db = await database;
+    var results =
+        await db!.query("Fee", columns: Fee.columns, orderBy: "id ASC");
+
+    List<Fee> list =
+        results.isNotEmpty ? results.map((c) => Fee.fromMap(c)).toList() : [];
+    return list;
+  }
+
+  // getFeeInIdMoney(String dateStr, int stdid) async {
+  //   final db = await database;
+  //   List<int> list = [];
+  //   String sqlQuery = "SELECT id FROM Fee f WHERE f.stdid=" +
+  //       stdid.toString() +
+  //       " and f.date='" +
+  //       dateStr +
+  //       "'";
+  //   var res = await db!.rawQuery(sqlQuery);
+  //   // print("Database getFee: " + Sqflite.firstIntValue(res).toString());
+  //   if (Sqflite.firstIntValue(res) == null) {
+  //     return -1;
+  //   } else {
+  //     list = res.map((c) => int.parse(c['money'].toString())).toList();
+  //     return list[0];
+  //   }
+  // }
 
   ///Delete
 

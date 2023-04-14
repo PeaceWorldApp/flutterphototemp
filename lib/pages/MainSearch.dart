@@ -2,10 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_photography/Database.dart';
 import 'package:flutter_photography/constants.dart';
+import 'package:flutter_photography/data/AttendBloc.dart';
+import 'package:flutter_photography/data/FeeBloc.dart';
 import 'package:flutter_photography/data/StudentBloc.dart';
 import 'package:flutter_photography/main.dart';
 import 'package:flutter_photography/models/Attendence.dart';
+import 'package:flutter_photography/models/Fee.dart';
 import 'package:flutter_photography/models/Student.dart';
+import 'package:flutter_photography/pages/MainFee.dart';
 import 'package:textfield_search/textfield_search.dart';
 
 class MainSearch extends StatelessWidget {
@@ -36,7 +40,9 @@ class MySearch extends StatefulWidget {
 }
 
 class _MySearchState extends State<MySearch> {
-  bool _isTextFieldVisible = false;
+  Future<List<Fee>>? feeGlobal;
+  List<Fee>? feeList;
+  String _moneyGlobal = "";
   final _testList = [
     'Test Item 1',
     'Test Item 2',
@@ -45,18 +51,23 @@ class _MySearchState extends State<MySearch> {
   ];
 
   final stdBloc = StudentBloc();
+  // final attBloc = AttendBloc();
+  final feeBloc = FeeBloc();
   Future<List<Attendence>>? futureList;
   // Future<List<Student>>? studentList;
 
   TextEditingController myController2 = TextEditingController();
   List<Student>? myList;
+  Student? currentStd;
   String current_id = "-1";
 
   @override
   void initState() {
     // myController2.addListener(_printLatestValue);
     getStringList();
+    feeGlobal = fetchStdFee();
     futureList = fetchStdAttendence();
+    feeGlobal = fetchStdFee();
     super.initState();
     // studentList = fetchStdList();
   }
@@ -71,6 +82,7 @@ class _MySearchState extends State<MySearch> {
     // widget tree.
     myController2.dispose();
     stdBloc.dispose();
+    feeBloc.dispose();
     super.dispose();
   }
 
@@ -86,10 +98,22 @@ class _MySearchState extends State<MySearch> {
     });
   }
 
+  Future<List<Fee>> fetchStdFee() async {
+    return Future.delayed(Duration(seconds: 1), () async {
+      return await DBProvider.db.getAllFee();
+    });
+  }
+
   void getStdAttendList() async {
     var tempList1 = fetchStdAttendence();
     // Or use setState to assign the tempList to myList
     futureList = tempList1;
+  }
+
+  void getFeeMoney() async {
+    var tempList2 = fetchStdFee();
+    // Or use setState to assign the tempList to myList
+    feeGlobal = tempList2;
   }
 
   void getStringList() async {
@@ -98,9 +122,30 @@ class _MySearchState extends State<MySearch> {
     myList = tempList;
   }
 
+  getMoneyFromFee(int feid) async {
+    for (Fee element in feeList!) {
+      if (element.id!.compareTo(feid) == 0) {
+        _moneyGlobal = element.money.toString();
+      }
+    }
+  }
+
+  void getStudent() async {
+    var tempList = await DBProvider.db.getStudent(int.parse(current_id));
+    // Or use setState to assign the tempList to myList
+    currentStd = tempList;
+  }
+
+  void func() async {
+    List<Fee>? value = await feeGlobal; // Await on your future.
+    setState(() {
+      feeList = value;
+    });
+  }
+
   // mocking a future
   Future<List> fetchSimpleData() async {
-    await Future.delayed(Duration(milliseconds: 2000));
+    await Future.delayed(Duration(seconds: 1));
 
     List _list = <dynamic>[];
 
@@ -142,12 +187,15 @@ class _MySearchState extends State<MySearch> {
                       //   children: [
                       ElevatedButton(
                     child: Text("Search".toUpperCase()),
-                    onPressed: () async {
+                    onPressed: () {
                       setState(() {
                         String textContent = myController2.text;
                         current_id =
                             textContent.substring(0, textContent.indexOf(' '));
+
                         getStdAttendList();
+                        getStudent();
+                        func();
                       });
                       // String textContent = myController2.text;
                       // String id =
@@ -170,13 +218,27 @@ class _MySearchState extends State<MySearch> {
                         itemCount: snapshot.data!.length,
                         itemBuilder: (BuildContext context, int index) {
                           Attendence item = snapshot.data![index];
+                          print("feeid: " + item.feid.toString());
+                          getMoneyFromFee(item.feid);
+                          print("check datemoney:" +
+                              item.date +
+                              " " +
+                              _moneyGlobal);
                           return ListTile(
                               onTap: () {
                                 setState(() {
-                                  _addnote(item.id!);
+                                  _addnote(
+                                      item.id!,
+                                      currentStd!.firstName +
+                                          " " +
+                                          currentStd!.lastName,
+                                      item.date,
+                                      _moneyGlobal);
+
+                                  print("std: " + current_id);
                                 });
                               },
-                              title: Text(item.date + "    " + item.note));
+                              title: Text(item.date + "    " + _moneyGlobal));
                           // Dismissible(
                           //   key: UniqueKey(),
                           //   background: Container(color: Colors.red),
@@ -217,8 +279,23 @@ class _MySearchState extends State<MySearch> {
   }
 
   _list() => Text('list of contacts goes here');
-  _addnote(int id) {
-    print(id);
+  // _addnote(int id) {
+  //   print(id);
+  // }
+
+  void _addnote(int id, String name, String date, String money) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MainFee(
+                attid: id,
+                title: name,
+                dateAtt: date,
+                money: money))).then((value) {
+      setState(() {
+        // futureList = fetchList();
+      });
+    });
   }
 
   void _onHomePressed() {

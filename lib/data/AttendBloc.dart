@@ -14,8 +14,8 @@ class AttendBloc {
   get clients => _stdController.stream;
   String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-  getAtds(String currentDate) async {
-    _stdController.sink.add(await DBProvider.db.getAllAttendences(currentDate));
+  getAtds(String r) async {
+    _stdController.sink.add(await DBProvider.db.getAllAttendences(r));
   }
 
   Future<void> delete(int id) async {

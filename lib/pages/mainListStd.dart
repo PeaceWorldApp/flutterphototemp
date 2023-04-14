@@ -53,7 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<List<Student>>? futureList;
 
   Future<List<Student>> fetchList() async {
-    return Future.delayed(Duration(seconds: 2), () {
+    return Future.delayed(Duration(seconds: 1), () {
       return DBProvider.db.getAllStudents();
     });
   }

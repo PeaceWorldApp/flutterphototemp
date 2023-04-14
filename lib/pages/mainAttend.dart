@@ -60,7 +60,7 @@ class _MyAttendState extends State<MyAttend> {
   Future<List<Student>>? studentList;
 
   Future<List<Attendence>> fetchList() async {
-    return Future.delayed(Duration(seconds: 2), () async {
+    return Future.delayed(Duration(seconds: 1), () async {
       await attBloc.addCheck(currentDate);
       return await DBProvider.db.getAllAttendences(currentDate);
     });
@@ -111,9 +111,10 @@ class _MyAttendState extends State<MyAttend> {
                       attBloc.update(item.id!);
                     },
                     child: ListTile(
-                      title: Text(stdBloc.byId(item.stdid)!.firstName +
-                          " " +
-                          item.status.toString()),
+                      title: Text(stdBloc.byId(item.stdid)!.firstName),
+                      // +
+                      //     " " +
+                      //     item.status.toString()),
                       leading: Text(item.id.toString()),
                     ),
                   );

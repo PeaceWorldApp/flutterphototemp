@@ -16,20 +16,23 @@ class Attendence {
   String date;
   String note;
   int status;
+  int feid;
 
   Attendence(
       {this.id,
       required this.stdid,
       required this.date,
       required this.note,
-      required this.status});
+      required this.status,
+      required this.feid});
 
   factory Attendence.fromMap(Map<String, dynamic> json) => new Attendence(
       id: json["id"],
       stdid: json["stdid"],
       date: json["date"],
       note: json["note"],
-      status: json["status"]);
+      status: json["status"],
+      feid: json["feid"]);
 
   Map<String, dynamic> toMap() => {
         "id": id,
@@ -37,10 +40,17 @@ class Attendence {
         "date": date,
         "note": note,
         "status": status,
+        "feid": feid,
       };
   int get _status => this.status;
 
   set myValue(int value) {
     this.status = value;
+  }
+
+  int get _feid => this.feid;
+
+  set myFeid(int value) {
+    this.feid = value;
   }
 }
